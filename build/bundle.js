@@ -48,13 +48,19 @@
 
 	__webpack_require__(1);
 
-		console.log('test');
+	__webpack_require__(2);
 
 /***/ },
 /* 1 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	"use strict";
 
 /***/ }
 /******/ ]);

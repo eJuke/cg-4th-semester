@@ -3,20 +3,16 @@ var webpack = require("webpack"),
 		ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-	context: __dirname,
+	context: path.join(__dirname, 'app'),
 	//точки входа
-	entry: {
-		bundle: "./app/app.js",
-	},
+	entry: "./index",
 	resolve: {
 		extensions: ['', '.js', '.jsx']
 	},
 	devtool: '#cheap-module-source-map',
 	//вывод	
 	output: {
-		path: "./build",
-		filename: "[name].js",
-		chunkFilename: "[id].js"
+		path: path.join(__dirname, 'build'),
 	},
 	module: {
 		//загрузчики
@@ -44,7 +40,7 @@ module.exports = {
 		]
 	},
 	sassLoader: {
-		outputStyle: 'expanded'
+		outputStyle: 'compressed'
 	},
 	plugins: [
 		new ExtractTextPlugin('css/style.css', {
