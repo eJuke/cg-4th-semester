@@ -4,8 +4,9 @@
   "description": "eltech computer-graphics labs",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-dev-server --inline --hot",
-    "build": "webpack -p"
+    "dev": "node dev-server",
+    "build": "node build",
+    "build -comp": "webpack -p"
   },
   "repository": {
     "type": "git",
