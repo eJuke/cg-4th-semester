@@ -58,11 +58,14 @@
 	    lab1 = new Lab1(rootElementId); //styles
 
 
+	var cpath = window.location.toString() == 'https://ejuke.github.io/cg-7th-semester/' ? window.location.toString() : '/';
+
 	document.body.onload = function (e) {
 		lab1.prepare();
-		lab1.readShader('../app/shaders/lab1.frag');
-		lab1.readShader('../app/shaders/lab1.vert');
-	};
+
+		lab1.readShader(cpath + 'app/shaders/lab1.frag');
+		lab1.readShader(cpath + 'app/shaders/lab1.vert');
+		};
 
 /***/ },
 /* 1 */
