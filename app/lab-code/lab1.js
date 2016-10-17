@@ -1,9 +1,13 @@
 function lab1 (id) {
+	//init components
 	this.rootId = id;
 	this.webgl = null;
 	this.canvas = null;
 	this.VSHADER_SOURCE = this.FSHADER_SOURCE = null;
 	this.VSHADER = this.FSHADER = null;
+
+	//data
+	this.pMatrix = mat4.create(), this.mvMatrix = mat4.create();
 }
 
 /*Чтение шейдеров*/
@@ -32,6 +36,7 @@ lab1.prototype.onReadShader = function(fileString, shaderType){
 		this.FSHADER_SOURCE = fileString;
 		this.FSHADER = this.compileShaders(this.webgl, this.FSHADER_SOURCE, this.webgl.FRAGMENT_SHADER);
 	}
+	else return null;
 	if (this.VSHADER_SOURCE && this.FSHADER_SOURCE) {
 		console.info('Shaders loaded');
 		this.execute();
@@ -96,6 +101,26 @@ lab1.prototype.prepare = function(){
 	rootEl.appendChild(inputZ);
 }
 
+/*Инициализация шейдеров*/
+lab1.prototype.initShaders = function(gl){
+	this.shaderProgram = gl.createProgram();
+	gl.attachShader(this.shaderProgram, this.VSHADER);
+	gl.attachShader(this.shaderProgram, this.FSHADER);
+	gl.linkProgram(this.shaderProgram);
+
+	if(!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)){
+		console.error('Unable to initialize the shader program.');
+	}
+
+	gl.useProgram(this.shaderProgram);
+
+	this.shaderProgram.vertexPositionAttribute = gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
+	gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
+
+	this.shaderProgram.pMatrixUniform = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
+	this.shaderProgram.mvMatrixUniform = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+}
+
 /*Собственно, отрисовка контекста*/
 lab1.prototype.execute = function(){
 	if (this.webgl) console.info('WebGL init successful');
@@ -104,6 +129,8 @@ lab1.prototype.execute = function(){
 		return false;
 	}
 
+	this.webgl.viewportWidth = this.canvas.width;
+	this.webgl.viewportHeight = this.canvas.height;
 	// установить в качестве цвета очистки буфера цвета черный, полная непрозрачность
 	this.webgl.clearColor(0.0, 0.0, 0.0, 1.0);
 	// включает использование буфера глубины
@@ -112,24 +139,49 @@ lab1.prototype.execute = function(){
 	this.webgl.depthFunc(this.webgl.LEQUAL);
 	this.webgl.clear(this.webgl.COLOR_BUFFER_BIT|this.webgl.DEPTH_BUFFER_BIT);  
 
-	this.shaderProgram = this.webgl.createProgram();
-	this.webgl.attachShader(this.shaderProgram, this.VSHADER);
-	this.webgl.attachShader(this.shaderProgram, this.FSHADER);
-	this.webgl.linkProgram(this.shaderProgram);
+	this.initShaders(this.webgl);
 
-	if(!this.webgl.getProgramParameter(this.shaderProgram, this.webgl.LINK_STATUS)){
-		console.error('Unable to initialize the shader program.');
-	}
-
-	this.webgl.useProgram(this.shaderProgram);
-
-	this.vertexPositionAttribute = this.webgl.getAttribLocation(this.shaderProgram, "aVertexPosition");
-	this.webgl.enableVertexAttribArray(this.vertexPositionAttribute);
-
-
+	this.horizAspect = this.webgl.viewportHeight / this.webgl.viewportWidth;
+	this.initBuffers(this.webgl);
+	this.drawScene(this.webgl);
 }
 
+/*Инициализация буфера*/
+lab1.prototype.initBuffers = function(gl){
+	this.squareVerticlesBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticlesBuffer);
+	this.verticles = [
+		 1.0,  1.0,  0.0,
+		-1.0,  1.0,  0.0,
+		 1.0, -1.0,  0.0,
+		-1.0, -1.0,  0.0
+	];
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticles), gl.STATIC_DRAW);
+	this.squareVerticlesBuffer.itemSize = 3;
+	this.squareVerticlesBuffer.numItems = 4;
+}
 
+/*Отрисовка сцены*/
+lab1.prototype.drawScene = function(gl){
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+
+	mat4.perspective(45, this.horizAspect, 0.1, 100.0, this.pMatrix);
+	//создаем матрицу текущего состояния (изначально - единичная) model-view matrix
+	mat4.identity(this.mvMatrix);
+	mat4.translate(this.mvMatrix, [0.0, 0.0, -7.0]);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticlesBuffer);
+	gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.squareVerticlesBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+	this.setMatrixUniforms(this.webgl);
+	this.webgl.drawArrays(this.webgl.TRIANGLE_STRIP, 0, this.squareVerticlesBuffer.numItems);
+}
+
+/*Перенос изменений матриц в видеокарту*/
+lab1.prototype.setMatrixUniforms = function(gl) {
+	gl.uniformMatrix4fv(this.shaderProgram.pMatrixUniform, false, this.pMatrix);
+	gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix);
+}
 
 /*Экспорт модуля*/
 module.exports = lab1;

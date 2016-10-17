@@ -1,7 +1,7 @@
 //styles
 import './style/main.scss';
 //js
-import './gl-matrix-min.js';
+
 // import '../node_modules/react/dist/react.min.js';
 // import '../node_modules/react-dom/dist/react-dom.min.js';
 
