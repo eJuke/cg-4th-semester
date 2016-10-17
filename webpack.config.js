@@ -13,6 +13,7 @@ module.exports = {
 	//вывод	
 	output: {
 		path: path.join(__dirname, 'build'),
+		publicPath: "https://ejuke.github.io/cg-7th-semester/"
 	},
 	module: {
 		//загрузчики

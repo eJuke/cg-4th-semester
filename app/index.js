@@ -11,6 +11,6 @@ var rootElementId = 'root',
 
 document.body.onload = function(e){
 	lab1.prepare();
-	lab1.readShader('/app/shaders/lab1.frag');
-	lab1.readShader('/app/shaders/lab1.vert');
+	lab1.readShader('../app/shaders/lab1.frag');
+	lab1.readShader('../app/shaders/lab1.vert');
 }
