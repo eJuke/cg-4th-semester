@@ -1,3 +1,5 @@
-void main(void){
-	gl_FragColor = vec4(0.5, 1.0, 0.8, 1.0);
+varying lowp vec4 vColor;
+
+void main(void) {
+	gl_FragColor = vColor;
 }

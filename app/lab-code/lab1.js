@@ -8,6 +8,7 @@ function lab1 (id) {
 
 	//data
 	this.pMatrix = mat4.create(), this.mvMatrix = mat4.create();
+	this.cubeXRotation = 0.0, this.cubeYRotation = 0.0, this.cubeZRotation = 0.0;
 }
 
 /*Чтение шейдеров*/
@@ -82,6 +83,22 @@ lab1.prototype.prepare = function(){
 	inputX.type = "number";
 	inputY.type = "number";
 	inputZ.type = "number";
+	inputX.value = "0.0";
+	inputY.value = "0.0";
+	inputZ.value = "0.0";
+	var thisClass = this;
+	inputX.onchange = function(){
+		thisClass.cubeXRotation = thisClass.rotate(this.value);
+		thisClass.drawScene(thisClass.webgl);
+	};
+	inputY.onchange = function(){
+		thisClass.cubeYRotation = thisClass.rotate(this.value);
+		thisClass.drawScene(thisClass.webgl);
+	};
+	inputZ.onchange = function(){
+		thisClass.cubeZRotation = thisClass.rotate(this.value);
+		thisClass.drawScene(thisClass.webgl);
+	};
 	inputX.id = "angleX";
 	inputY.id = "angleY";
 	inputZ.id = "angleZ";
@@ -99,6 +116,10 @@ lab1.prototype.prepare = function(){
 	rootEl.appendChild(inputY);
 	rootEl.appendChild(labelZ);
 	rootEl.appendChild(inputZ);
+}
+
+lab1.prototype.rotate = function(angle){
+	return angle * Math.PI / 180.0;
 }
 
 /*Инициализация шейдеров*/
@@ -119,6 +140,8 @@ lab1.prototype.initShaders = function(gl){
 
 	this.shaderProgram.pMatrixUniform = gl.getUniformLocation(this.shaderProgram, "uPMatrix");
 	this.shaderProgram.mvMatrixUniform = gl.getUniformLocation(this.shaderProgram, "uMVMatrix");
+	this.shaderProgram.vertexColorAttribute = gl.getAttribLocation(this.shaderProgram, "aVertexColor");
+	gl.enableVertexAttribArray(this.shaderProgram.vertexColorAttribute);
 }
 
 /*Собственно, отрисовка контекста*/
@@ -148,33 +171,119 @@ lab1.prototype.execute = function(){
 
 /*Инициализация буфера*/
 lab1.prototype.initBuffers = function(gl){
-	this.squareVerticlesBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticlesBuffer);
-	this.verticles = [
-		 1.0,  1.0,  0.0,
-		-1.0,  1.0,  0.0,
-		 1.0, -1.0,  0.0,
-		-1.0, -1.0,  0.0
+
+	this.cubeVerticesBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVerticesBuffer);
+	this.vertices = [
+		// Передняя грань
+		-1.0, -1.0,  1.0,
+		 1.0, -1.0,  1.0,
+		 1.0,  1.0,  1.0,
+		-1.0,  1.0,  1.0,
+
+		// Задняя грань
+		-1.0, -1.0, -1.0,
+		-1.0,  1.0, -1.0,
+		 1.0,  1.0, -1.0,
+		 1.0, -1.0, -1.0,
+
+		// Верхняя грань
+		-1.0,  1.0, -1.0,
+		-1.0,  1.0,  1.0,
+		 1.0,  1.0,  1.0,
+		 1.0,  1.0, -1.0,
+
+		// Нижняя грань
+		-1.0, -1.0, -1.0,
+		 1.0, -1.0, -1.0,
+		 1.0, -1.0,  1.0,
+		-1.0, -1.0,  1.0,
+
+		// Правая грань
+		 1.0, -1.0, -1.0,
+		 1.0,  1.0, -1.0,
+		 1.0,  1.0,  1.0,
+		 1.0, -1.0,  1.0,
+
+		// Левая грань
+		-1.0, -1.0, -1.0,
+		-1.0, -1.0,  1.0,
+		-1.0,  1.0,  1.0,
+		-1.0,  1.0, -1.0
 	];
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.verticles), gl.STATIC_DRAW);
-	this.squareVerticlesBuffer.itemSize = 3;
-	this.squareVerticlesBuffer.numItems = 4;
+
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+
+	this.colors = [
+		[1.0,  1.0,  1.0,  1.0],    // Front face: white
+		[1.0,  0.0,  0.0,  1.0],    // Back face: red
+		[0.0,  1.0,  0.0,  1.0],    // Top face: green
+		[0.0,  0.0,  1.0,  1.0],    // Bottom face: blue
+		[1.0,  1.0,  0.0,  1.0],    // Right face: yellow
+		[1.0,  0.0,  1.0,  1.0]     // Left face: purple
+	];
+
+	this.generatedColors = [];
+
+	for (var j=0; j<6; j++) {
+		var c = this.colors[j];
+		
+		for (var i=0; i<4; i++) {
+			this.generatedColors = this.generatedColors.concat(c);
+		}
+	}
+
+	this.cubeVerticesColorBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVerticesColorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.generatedColors), gl.STATIC_DRAW);
+	
+	this.cubeVerticesIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cubeVerticesIndexBuffer);
+
+	// Этот массив определяет каждую грань как два треугольника,
+	// используя индексы в массиве вершин, чтобы определить позицию
+	// каждого треугольника.
+
+	this.cubeVertexIndices = [
+		0,  1,  2,      0,  2,  3,    // front
+		4,  5,  6,      4,  6,  7,    // back
+		8,  9,  10,     8,  10, 11,   // top
+		12, 13, 14,     12, 14, 15,   // bottom
+		16, 17, 18,     16, 18, 19,   // right
+		20, 21, 22,     20, 22, 23    // left
+	];
+
+	// Теперь отправим массив элементов в GL
+
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.cubeVertexIndices), gl.STATIC_DRAW);
 }
 
 /*Отрисовка сцены*/
 lab1.prototype.drawScene = function(gl){
+	console.log(this.cubeXRotation, this.cubeYRotation, this.cubeZRotation);
+	//очистка canvas
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	//установка viewport
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
 	mat4.perspective(45, this.horizAspect, 0.1, 100.0, this.pMatrix);
 	//создаем матрицу текущего состояния (изначально - единичная) model-view matrix
 	mat4.identity(this.mvMatrix);
-	mat4.translate(this.mvMatrix, [0.0, 0.0, -7.0]);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticlesBuffer);
-	gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, this.squareVerticlesBuffer.itemSize, gl.FLOAT, false, 0, 0);
+	mat4.translate(this.mvMatrix, [0.0, 0.0, -10.0]);
+	mat4.rotate(this.mvMatrix, this.cubeXRotation, [1,0,0]);
+	mat4.rotate(this.mvMatrix, this.cubeYRotation, [0,1,0]);
+	mat4.rotate(this.mvMatrix, this.cubeZRotation, [0,0,1]);
 
-	this.setMatrixUniforms(this.webgl);
-	this.webgl.drawArrays(this.webgl.TRIANGLE_STRIP, 0, this.squareVerticlesBuffer.numItems);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVerticesBuffer);
+	gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVerticesColorBuffer);
+	gl.vertexAttribPointer(this.shaderProgram.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cubeVerticesIndexBuffer);
+
+	this.setMatrixUniforms(gl);
+	gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
 }
 
 /*Перенос изменений матриц в видеокарту*/
