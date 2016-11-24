@@ -8,15 +8,39 @@ import './style/main.scss';
 var canvasID = 'canvas',
 		controlsID = 'controls',
 		Lab1 = require ('./lab-code/lab1.js'),
-		lab1 = new Lab1(canvasID, controlsID);
+		Lab2 = require ('./lab-code/lab2.js'),
+		lab = new Lab1(canvasID, controlsID);
 
 var cpath = (window.location.toString() == 'https://ejuke.github.io/cg-7th-semester/') ? window.location.toString() : '/';
 
 document.body.onload = function(e){
-	lab1.prepare();
-
-	lab1.readShader(cpath+'app/shaders/lab1.frag');
-	lab1.readShader(cpath+'app/shaders/lab1.vert');
+	lab.prepare();
+	lab.readShader(cpath+'app/shaders/lab1.frag');
+	lab.readShader(cpath+'app/shaders/lab1.vert');
 
 }
 
+document.getElementById('change-lab-1').onclick = function(){changeLab(1);};
+document.getElementById('change-lab-2').onclick = function(){changeLab(2);};
+
+function clearRoot(){
+	if (lab.destroy) lab.destroy();
+	lab = null;
+	document.getElementById('root').innerHTML = '<div class="canvas-container" id="canvas"></div><div class="controls-container" id="controls"></div>';
+}
+
+function changeLab(number){
+	clearRoot();
+	switch(number){
+		case 1: 
+			lab = new Lab1(canvasID, controlsID);
+			lab.prepare();
+			lab.readShader(cpath+'app/shaders/lab1.frag');
+			lab.readShader(cpath+'app/shaders/lab1.vert');
+			break;
+		case 2:
+			lab = new Lab2(canvasID, controlsID);
+			lab.prepare();
+			break;
+	}
+}

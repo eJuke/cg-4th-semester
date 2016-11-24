@@ -12,53 +12,6 @@ function lab1 (id, id2) {
 	this.cubeXRotation = 30 * Math.PI / 180, this.cubeYRotation = 30 * Math.PI / 180, this.cubeZRotation = 0.0;
 }
 
-/*Чтение шейдеров*/
-lab1.prototype.readShader = function(filePath){
-	var shaderType = null;
-	var thisObject = this;
-	if (filePath.search('.frag') != -1) shaderType = 'fragment';
-	if (filePath.search('.vert') != -1) shaderType = 'vertex';
-	var request = new XMLHttpRequest();
-	request.onreadystatechange = function(){
-		if (request.readyState === 4 && request.status !== 404) { 
-			thisObject.onReadShader(request.responseText, shaderType);
-		}
-	}
-	request.open('GET', filePath, true);
-	request.send();
-}
-
-/*Инициализация шейдеров после чтения*/
-lab1.prototype.onReadShader = function(fileString, shaderType){
-	if (shaderType == 'vertex'){
-		this.VSHADER_SOURCE = fileString;
-		this.VSHADER = this.compileShaders(this.webgl, this.VSHADER_SOURCE, this.webgl.VERTEX_SHADER);
-	}
-	else if (shaderType == 'fragment'){
-		this.FSHADER_SOURCE = fileString;
-		this.FSHADER = this.compileShaders(this.webgl, this.FSHADER_SOURCE, this.webgl.FRAGMENT_SHADER);
-	}
-	else return null;
-	if (this.VSHADER_SOURCE && this.FSHADER_SOURCE) {
-		console.info('Shaders loaded');
-		this.execute();
-	}
-}
-
-/*Компиляция шейдеров*/
-lab1.prototype.compileShaders = function(gl, shaderSrc, shaderType){
-	var shader = gl.createShader(shaderType);
-	gl.shaderSource(shader, shaderSrc);
-	gl.compileShader(shader);
-
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.error("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
-		return null;
-	}
-	else console.info('Shader compiled successful.');
-	return shader;
-}
-
 /*Подготовка документа к исполнению кода*/
 lab1.prototype.prepare = function(){
 	var canvasC = document.getElementById(this.canvasId);
@@ -121,6 +74,61 @@ lab1.prototype.prepare = function(){
 	controlsC.appendChild(inputY);
 	controlsC.appendChild(labelZ);
 	controlsC.appendChild(inputZ);
+}
+
+/* Деструктор */
+lab1.prototype.destroy = function(){
+	this.webgl = null;
+	this.canvas = null;
+	this.VSHADER_SOURCE = this.FSHADER_SOURCE = null;
+	this.VSHADER = this.FSHADER = null;
+}
+
+/*Чтение шейдеров*/
+lab1.prototype.readShader = function(filePath){
+	var shaderType = null;
+	var thisObject = this;
+	if (filePath.search('.frag') != -1) shaderType = 'fragment';
+	if (filePath.search('.vert') != -1) shaderType = 'vertex';
+	var request = new XMLHttpRequest();
+	request.onreadystatechange = function(){
+		if (request.readyState === 4 && request.status !== 404) { 
+			thisObject.onReadShader(request.responseText, shaderType);
+		}
+	}
+	request.open('GET', filePath, true);
+	request.send();
+}
+
+/*Инициализация шейдеров после чтения*/
+lab1.prototype.onReadShader = function(fileString, shaderType){
+	if (shaderType == 'vertex'){
+		this.VSHADER_SOURCE = fileString;
+		this.VSHADER = this.compileShaders(this.webgl, this.VSHADER_SOURCE, this.webgl.VERTEX_SHADER);
+	}
+	else if (shaderType == 'fragment'){
+		this.FSHADER_SOURCE = fileString;
+		this.FSHADER = this.compileShaders(this.webgl, this.FSHADER_SOURCE, this.webgl.FRAGMENT_SHADER);
+	}
+	else return null;
+	if (this.VSHADER_SOURCE && this.FSHADER_SOURCE) {
+		console.info('Shaders loaded');
+		this.execute();
+	}
+}
+
+/*Компиляция шейдеров*/
+lab1.prototype.compileShaders = function(gl, shaderSrc, shaderType){
+	var shader = gl.createShader(shaderType);
+	gl.shaderSource(shader, shaderSrc);
+	gl.compileShader(shader);
+
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		console.error("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
+		return null;
+	}
+	else console.info('Shader compiled successful.');
+	return shader;
 }
 
 lab1.prototype.rotate = function(angle){

@@ -53,19 +53,46 @@
 	// import '../node_modules/react/dist/react.min.js';
 	// import '../node_modules/react-dom/dist/react-dom.min.js';
 
-	var rootElementId = 'root',
+	var canvasID = 'canvas',
+	    controlsID = 'controls',
 	    Lab1 = __webpack_require__(2),
-	    lab1 = new Lab1(rootElementId); //styles
+	    Lab2 = __webpack_require__(3),
+	    lab = new Lab1(canvasID, controlsID); //styles
 
 
 	var cpath = window.location.toString() == 'https://ejuke.github.io/cg-7th-semester/' ? window.location.toString() : '/';
 
 	document.body.onload = function (e) {
-		lab1.prepare();
+		lab.prepare();
 
-		lab1.readShader(cpath + 'app/shaders/lab1.frag');
-		lab1.readShader(cpath + 'app/shaders/lab1.vert');
-		};
+		lab.readShader(cpath + 'app/shaders/lab1.frag');
+		lab.readShader(cpath + 'app/shaders/lab1.vert');
+	};
+
+	document.getElementById('change-lab-1').onclick = function () {
+		changeLab(1);
+	};
+	document.getElementById('change-lab-2').onclick = function () {
+		changeLab(2);
+	};
+
+	function clearRoot() {
+		lab.destroy();
+		lab = null;
+		document.getElementById('root').innerHTML = '<div class="canvas-container" id="canvas"></div><div class="controls-container" id="controls"></div>';
+	}
+
+	function changeLab(number) {
+		clearRoot();
+		switch (number) {
+			case 1:
+				lab = Lab1(canvasID, controlsID);
+				break;
+			case 2:
+				lab = Lab2(canvasID, controlsID);
+				break;
+		}
+		}
 
 /***/ },
 /* 1 */
@@ -79,9 +106,10 @@
 
 	'use strict';
 
-	function lab1(id) {
+	function lab1(id, id2) {
 		//init components
-		this.rootId = id;
+		this.canvasId = id;
+		this.controlsId = id2;
 		this.webgl = null;
 		this.canvas = null;
 		this.VSHADER_SOURCE = this.FSHADER_SOURCE = null;
@@ -89,7 +117,7 @@
 
 		//data
 		this.pMatrix = mat4.create(), this.mvMatrix = mat4.create();
-		this.cubeXRotation = 0.0, this.cubeYRotation = 0.0, this.cubeZRotation = 0.0;
+		this.cubeXRotation = 30 * Math.PI / 180, this.cubeYRotation = 30 * Math.PI / 180, this.cubeZRotation = 0.0;
 	}
 
 	/*Чтение шейдеров*/
@@ -138,8 +166,9 @@
 
 	/*Подготовка документа к исполнению кода*/
 	lab1.prototype.prepare = function () {
-		var rootEl = document.getElementById(this.rootId);
-		rootEl.innerHTML = '<canvas id="lab1" width="600px" height="600px"></canvas>';
+		var canvasC = document.getElementById(this.canvasId);
+		var controlsC = document.getElementById(this.controlsId);
+		canvasC.innerHTML = '<canvas id="lab1" width="600px" height="600px"></canvas>';
 		this.canvas = document.getElementById('lab1');
 		var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
 		for (var ii = 0; ii < names.length; ++ii) {
@@ -161,19 +190,19 @@
 		inputX.type = "number";
 		inputY.type = "number";
 		inputZ.type = "number";
-		inputX.value = "0.0";
-		inputY.value = "0.0";
-		inputZ.value = "0.0";
+		inputX.value = "30";
+		inputY.value = "30";
+		inputZ.value = "0";
 		var thisClass = this;
-		inputX.onchange = function () {
+		inputX.onchange = inputX.onkeyup = inputX.onmouseup = function () {
 			thisClass.cubeXRotation = thisClass.rotate(this.value);
 			thisClass.drawScene(thisClass.webgl);
 		};
-		inputY.onchange = function () {
+		inputY.onchange = inputY.onkeyup = inputY.onmouseup = function () {
 			thisClass.cubeYRotation = thisClass.rotate(this.value);
 			thisClass.drawScene(thisClass.webgl);
 		};
-		inputZ.onchange = function () {
+		inputZ.onchange = inputZ.onkeyup = inputZ.onmouseup = function () {
 			thisClass.cubeZRotation = thisClass.rotate(this.value);
 			thisClass.drawScene(thisClass.webgl);
 		};
@@ -184,16 +213,16 @@
 		inputY.className = "angle-input";
 		inputZ.className = "angle-input";
 
-		labelX.innerHTML = "<br><br>угол по оси X:  ";
-		labelY.innerHTML = "<br><br>угол по оси Y:  ";
-		labelZ.innerHTML = "<br><br>угол по оси Z:  ";
+		labelX.innerHTML = "угол по оси X:  ";
+		labelY.innerHTML = "угол по оси Y:  ";
+		labelZ.innerHTML = "угол по оси Z:  ";
 
-		rootEl.appendChild(labelX);
-		rootEl.appendChild(inputX);
-		rootEl.appendChild(labelY);
-		rootEl.appendChild(inputY);
-		rootEl.appendChild(labelZ);
-		rootEl.appendChild(inputZ);
+		controlsC.appendChild(labelX);
+		controlsC.appendChild(inputX);
+		controlsC.appendChild(labelY);
+		controlsC.appendChild(inputY);
+		controlsC.appendChild(labelZ);
+		controlsC.appendChild(inputZ);
 	};
 
 	lab1.prototype.rotate = function (angle) {
@@ -272,8 +301,8 @@
 
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
-		this.colors = [[1.0, 1.0, 1.0, 1.0], // Front face: white
-		[1.0, 0.0, 0.0, 1.0], // Back face: red
+		this.colors = [[1.0, 0.0, 0.0, 1.0], // Front face: red
+		[1.0, 1.0, 1.0, 1.0], // Back face: white
 		[0.0, 1.0, 0.0, 1.0], // Top face: green
 		[0.0, 0.0, 1.0, 1.0], // Bottom face: blue
 		[1.0, 1.0, 0.0, 1.0], // Right face: yellow
@@ -316,7 +345,6 @@
 
 	/*Отрисовка сцены*/
 	lab1.prototype.drawScene = function (gl) {
-		console.log(this.cubeXRotation, this.cubeYRotation, this.cubeZRotation);
 		//очистка canvas
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		//установка viewport
@@ -348,8 +376,29 @@
 		gl.uniformMatrix4fv(this.shaderProgram.mvMatrixUniform, false, this.mvMatrix);
 	};
 
+	lab1.prototype.destroy = function () {
+		this.webgl = null;
+		this.canvas = null;
+		this.VSHADER_SOURCE = this.FSHADER_SOURCE = null;
+		this.VSHADER = this.FSHADER = null;
+	};
+
 	/*Экспорт модуля*/
 	module.exports = lab1;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function lab2(id, id2) {
+		this.gl = null;
+	}
+
+	lab2.prototype.destroy = function () {};
+
+		module.exports = lab2;
 
 /***/ }
 /******/ ]);
