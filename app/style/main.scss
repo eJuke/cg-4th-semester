@@ -46,3 +46,54 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
+
+html{
+	font-family: 'Helvetica', 'Arial', sans-serif;
+}
+
+
+.wrapper{
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+body{
+	background-color: #f3f4f5;
+}
+
+header.header > .wrapper{
+	background-color: #08c;
+	height: 60px;
+}
+
+.menu{
+	display: flex;
+	color: white;
+}
+
+.menu__item{
+	padding: 0 15px;
+	height: 60px;
+	line-height: 60px;
+	cursor: pointer;
+	&:hover{
+		background-color: #007fbf;
+	}
+}
+
+#root{
+	background-color: #fff;
+	display: flex;
+}
+
+.controls-container{
+	padding: 20px;
+	label{
+		display: block;
+		margin-bottom: 5px;
+		&+input{
+			margin-bottom: 15px;
+			height: 20px;
+		}
+	}
+}

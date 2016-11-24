@@ -5,9 +5,10 @@ import './style/main.scss';
 // import '../node_modules/react/dist/react.min.js';
 // import '../node_modules/react-dom/dist/react-dom.min.js';
 
-var rootElementId = 'root',
+var canvasID = 'canvas',
+		controlsID = 'controls',
 		Lab1 = require ('./lab-code/lab1.js'),
-		lab1 = new Lab1(rootElementId);
+		lab1 = new Lab1(canvasID, controlsID);
 
 var cpath = (window.location.toString() == 'https://ejuke.github.io/cg-7th-semester/') ? window.location.toString() : '/';
 
@@ -18,3 +19,4 @@ document.body.onload = function(e){
 	lab1.readShader(cpath+'app/shaders/lab1.vert');
 
 }
+

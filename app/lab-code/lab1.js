@@ -1,6 +1,7 @@
-function lab1 (id) {
+function lab1 (id, id2) {
 	//init components
-	this.rootId = id;
+	this.canvasId = id;
+	this.controlsId = id2;
 	this.webgl = null;
 	this.canvas = null;
 	this.VSHADER_SOURCE = this.FSHADER_SOURCE = null;
@@ -8,7 +9,7 @@ function lab1 (id) {
 
 	//data
 	this.pMatrix = mat4.create(), this.mvMatrix = mat4.create();
-	this.cubeXRotation = 0.0, this.cubeYRotation = 0.0, this.cubeZRotation = 0.0;
+	this.cubeXRotation = 30 * Math.PI / 180, this.cubeYRotation = 30 * Math.PI / 180, this.cubeZRotation = 0.0;
 }
 
 /*Чтение шейдеров*/
@@ -60,8 +61,9 @@ lab1.prototype.compileShaders = function(gl, shaderSrc, shaderType){
 
 /*Подготовка документа к исполнению кода*/
 lab1.prototype.prepare = function(){
-	var rootEl = document.getElementById(this.rootId);
-	rootEl.innerHTML = '<canvas id="lab1" width="600px" height="600px"></canvas>';
+	var canvasC = document.getElementById(this.canvasId);
+	var controlsC = document.getElementById(this.controlsId);
+	canvasC.innerHTML = '<canvas id="lab1" width="600px" height="600px"></canvas>';
 	this.canvas = document.getElementById('lab1');
 	var names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
 	for (var ii = 0; ii < names.length; ++ii) {
@@ -83,19 +85,22 @@ lab1.prototype.prepare = function(){
 	inputX.type = "number";
 	inputY.type = "number";
 	inputZ.type = "number";
-	inputX.value = "0.0";
-	inputY.value = "0.0";
-	inputZ.value = "0.0";
+	inputX.value = "30";
+	inputY.value = "30";
+	inputZ.value = "0";
 	var thisClass = this;
-	inputX.onchange = function(){
+	inputX.onchange = inputX.onkeyup = inputX.onmouseup
+	 = function(){
 		thisClass.cubeXRotation = thisClass.rotate(this.value);
 		thisClass.drawScene(thisClass.webgl);
 	};
-	inputY.onchange = function(){
+	inputY.onchange = inputY.onkeyup = inputY.onmouseup
+	 = function(){
 		thisClass.cubeYRotation = thisClass.rotate(this.value);
 		thisClass.drawScene(thisClass.webgl);
 	};
-	inputZ.onchange = function(){
+	inputZ.onchange = inputZ.onkeyup = inputZ.onmouseup
+	 = function(){
 		thisClass.cubeZRotation = thisClass.rotate(this.value);
 		thisClass.drawScene(thisClass.webgl);
 	};
@@ -106,16 +111,16 @@ lab1.prototype.prepare = function(){
 	inputY.className = "angle-input";
 	inputZ.className = "angle-input";
 
-	labelX.innerHTML = "<br><br>угол по оси X:  ";
-	labelY.innerHTML = "<br><br>угол по оси Y:  ";
-	labelZ.innerHTML = "<br><br>угол по оси Z:  ";
+	labelX.innerHTML = "угол по оси X:  ";
+	labelY.innerHTML = "угол по оси Y:  ";
+	labelZ.innerHTML = "угол по оси Z:  ";
 
-	rootEl.appendChild(labelX);
-	rootEl.appendChild(inputX);
-	rootEl.appendChild(labelY);
-	rootEl.appendChild(inputY);
-	rootEl.appendChild(labelZ);
-	rootEl.appendChild(inputZ);
+	controlsC.appendChild(labelX);
+	controlsC.appendChild(inputX);
+	controlsC.appendChild(labelY);
+	controlsC.appendChild(inputY);
+	controlsC.appendChild(labelZ);
+	controlsC.appendChild(inputZ);
 }
 
 lab1.prototype.rotate = function(angle){
@@ -215,8 +220,8 @@ lab1.prototype.initBuffers = function(gl){
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
 	this.colors = [
-		[1.0,  1.0,  1.0,  1.0],    // Front face: white
-		[1.0,  0.0,  0.0,  1.0],    // Back face: red
+		[1.0,  0.0,  0.0,  1.0],    // Front face: red
+		[1.0,  1.0,  1.0,  1.0],    // Back face: white
 		[0.0,  1.0,  0.0,  1.0],    // Top face: green
 		[0.0,  0.0,  1.0,  1.0],    // Bottom face: blue
 		[1.0,  1.0,  0.0,  1.0],    // Right face: yellow
@@ -260,7 +265,6 @@ lab1.prototype.initBuffers = function(gl){
 
 /*Отрисовка сцены*/
 lab1.prototype.drawScene = function(gl){
-	console.log(this.cubeXRotation, this.cubeYRotation, this.cubeZRotation);
 	//очистка canvas
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	//установка viewport
