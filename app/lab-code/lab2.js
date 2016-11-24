@@ -70,30 +70,60 @@ lab2.prototype.prepare = function(){
 	clickElem.value = 'Перерисовать';
 	clickElem.onclick = function(e){
 		e.preventDefault();
-		cur.data = new Array();
-		cur.elemData = undefined;
+		cur.setDataFromInput();
+	};
+
+	var randElem = document.createElement('input');
+	randElem.type = 'submit';
+	randElem.value = 'Случайные значения';
+	randElem.onclick = function(e){
+		e.preventDefault();
 		cur.inputs.forEach(function(item,i,arr){
 			if (i%2 == 0){
-				if(!cur.elemData) cur.elemData = new Array(2);
-				cur.elemData[0] = item.value;
+				item.value = parseInt(Math.random()*60+60*i/2);
 			}
 			else{
-				cur.elemData[1] = item.value;
+				item.value = parseInt(Math.random()*600);
 			}
-			if(i%2 != 0){
-				cur.data.push(cur.elemData);
-				cur.elemData = undefined;
-			}
-		});
-		cur.changeData();
-	};
+		})
+		cur.setDataFromInput();
+	}
 	controlsC.appendChild(clickElem);
+	controlsC.appendChild(randElem);
+}
+
+lab2.prototype.setDataFromInput = function(){
+	this.data = new Array();
+	this.elemData = undefined;
+	var cur = this;
+	this.inputs.forEach(function(item,i,arr){
+		if (i%2 == 0){
+			if(!cur.elemData) cur.elemData = new Array(2);
+			cur.elemData[0] = item.value;
+		}
+		else{
+			cur.elemData[1] = item.value;
+			cur.data.push(cur.elemData);
+			cur.elemData = undefined;
+		}
+	});
+	this.changeData();
 }
 
 lab2.prototype.changeData = function(){
 	this.flow = this.getBezierCurve(this.data, 0.01);
 	this.canvas.width = this.canvas.width;
 	var cur = this;
+	this.gl.beginPath();
+	this.gl.strokeStyle = '#08c';
+	this.gl.setLineDash([5,3]);
+	this.data.forEach(function(item, i, arr){
+		
+		if(i == 0) cur.gl.moveTo(item[0], item[1]);
+		else cur.gl.lineTo(item[0], item[1]);
+	});
+	cur.gl.stroke();
+	this.gl.setLineDash([1,0]);
 	this.data.forEach(function(item, i, arr){
 		cur.gl.font = "10pt Arial";
 		cur.gl.fillStyle = '#000';
@@ -103,6 +133,8 @@ lab2.prototype.changeData = function(){
 		cur.gl.fillStyle = '#08c';
 		cur.gl.fill();
 	})
+	this.gl.strokeStyle = "#000";
+
 	this.drawLines(this.gl, this.flow, 20);
 }
 
