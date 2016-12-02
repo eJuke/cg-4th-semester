@@ -10,7 +10,7 @@ function lab2(id, id2){
 lab2.prototype.prepare = function(){
 	var canvasC = document.getElementById(this.canvasId);
 	var controlsC = document.getElementById(this.controlsId);
-	canvasC.innerHTML = '<canvas id="lab2" width="600px" height="600px"></canvas>';
+	canvasC.innerHTML = '<canvas id="lab2" width="600px" height="600px" style="border-right: 1px solid black;"></canvas>';
 	this.canvas = document.getElementById('lab2');
 	this.gl = this.canvas.getContext('2d');
 	this.gl.lineWidth = "0.5";
@@ -111,7 +111,7 @@ lab2.prototype.setDataFromInput = function(){
 }
 
 lab2.prototype.changeData = function(){
-	this.flow = this.getBezierCurve(this.data, 0.01);
+	this.flow1 = this.getBezierCurve(this.data, 0.01);
 	this.canvas.width = this.canvas.width;
 	var cur = this;
 	this.gl.beginPath();
@@ -135,7 +135,7 @@ lab2.prototype.changeData = function(){
 	})
 	this.gl.strokeStyle = "#000";
 
-	this.drawLines(this.gl, this.flow, 20);
+	this.drawLines(this.gl, this.flow1, 0);
 }
 
 lab2.prototype.destroy = function(){

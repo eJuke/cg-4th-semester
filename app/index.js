@@ -9,6 +9,7 @@ var canvasID = 'canvas',
 		controlsID = 'controls',
 		Lab1 = require ('./lab-code/lab1.js'),
 		Lab2 = require ('./lab-code/lab2.js'),
+		Lab4 = require ('./lab-code/lab4.js'),
 		lab = new Lab1(canvasID, controlsID);
 
 var cpath = (window.location.toString() == 'https://ejuke.github.io/cg-7th-semester/') ? window.location.toString() : '/';
@@ -22,6 +23,7 @@ document.body.onload = function(e){
 
 document.getElementById('change-lab-1').onclick = function(){changeLab(1);};
 document.getElementById('change-lab-2').onclick = function(){changeLab(2);};
+document.getElementById('change-lab-4').onclick = function(){changeLab(4);};
 
 function clearRoot(){
 	if (lab.destroy) lab.destroy();
@@ -40,6 +42,10 @@ function changeLab(number){
 			break;
 		case 2:
 			lab = new Lab2(canvasID, controlsID);
+			lab.prepare();
+			break;
+		case 4:
+			lab = new Lab4(canvasID, controlsID);
 			lab.prepare();
 			break;
 	}

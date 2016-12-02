@@ -227,28 +227,56 @@ lab1.prototype.initBuffers = function(gl){
 
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
 
+	this.angles = [
+		0.0, -20.0, 0.0,
+		0.0, 20.0, 0.0,
+		-20.0, 0.0, 0.0,
+		20.0, 0.0, 0.0,
+		0.0, 0.0, -20.0,
+		0.0, 0.0, 20.0
+	];
+
+	this.anglesBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.anglesBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.angles), gl.STATIC_DRAW);
+
 	this.colors = [
 		[1.0,  0.0,  0.0,  1.0],    // Front face: red
-		[1.0,  1.0,  1.0,  1.0],    // Back face: white
+		[1.0,  0.0,  0.0,  1.0],    // Back face: white
 		[0.0,  1.0,  0.0,  1.0],    // Top face: green
 		[0.0,  0.0,  1.0,  1.0],    // Bottom face: blue
 		[1.0,  1.0,  0.0,  1.0],    // Right face: yellow
 		[1.0,  0.0,  1.0,  1.0]     // Left face: purple
 	];
 
-	this.generatedColors = [];
+	this.angleColors = [
+		[1.0,  1.0,  1.0,  1.0],
+		[1.0,  1.0,  1.0,  1.0],
+		[1.0,  1.0,  1.0,  1.0],
+		[1.0,  1.0,  1.0,  1.0],
+		[1.0,  1.0,  1.0,  1.0],
+		[1.0,  1.0,  1.0,  1.0]
+	];
+
+	this.generatedColors = [], this.generatedAngleColors = [];
 
 	for (var j=0; j<6; j++) {
 		var c = this.colors[j];
+		var cc = this.angleColors[j];
 		
 		for (var i=0; i<4; i++) {
 			this.generatedColors = this.generatedColors.concat(c);
+			this.generatedAngleColors = this.generatedAngleColors.concat(cc);
 		}
 	}
 
 	this.cubeVerticesColorBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVerticesColorBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.generatedColors), gl.STATIC_DRAW);
+
+	this.anglesColorBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.anglesColorBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.generatedAngleColors), gl.STATIC_DRAW);
 	
 	this.cubeVerticesIndexBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cubeVerticesIndexBuffer);
@@ -296,6 +324,13 @@ lab1.prototype.drawScene = function(gl){
 
 	this.setMatrixUniforms(gl);
 	gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.anglesBuffer);
+	gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.anglesColorBuffer);
+	gl.vertexAttribPointer(this.shaderProgram.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
+	gl.drawArrays(gl.LINES, 0, 6);
 }
 
 /*Перенос изменений матриц в видеокарту*/
