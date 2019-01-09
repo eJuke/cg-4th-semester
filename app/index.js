@@ -1,5 +1,5 @@
 //styles
-import './style/main.scss';
+import './style/main.css';
 //js
 
 // import '../node_modules/react/dist/react.min.js';
