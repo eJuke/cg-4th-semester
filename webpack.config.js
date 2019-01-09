@@ -7,7 +7,7 @@ module.exports = {
 	//точки входа
 	entry: "./index",
 	resolve: {
-		extensions: ['', '.js', '.jsx']
+		extensions: ['', '.js']
 	},
 	devtool: '#cheap-module-source-map',
 	//вывод	
@@ -18,14 +18,6 @@ module.exports = {
 	module: {
 		//загрузчики
 		loaders: [
-			{
-				test: /\.jsx?$/,
-				exclude: [/node_modules/],
-				loader: "babel-loader",
-				query: {
-					presets: ['es2015', 'react', 'stage-0', 'stage-1']
-				}
-			},
 			{
 				test: /\.css$/,
 				loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
